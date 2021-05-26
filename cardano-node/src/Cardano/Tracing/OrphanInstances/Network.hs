@@ -50,6 +50,7 @@ import           Ouroboros.Network.ConnectionId (ConnectionId (..))
 import           Ouroboros.Network.ConnectionManager.Types
                      ( AbstractState (..)
                      , ConnectionManagerTrace (..)
+                     , ConnectionManagerCounters (..)
                      )
 import           Ouroboros.Network.ConnectionHandler
                      ( ConnectionHandlerTrace(..)
