@@ -73,6 +73,7 @@ import           Ouroboros.Consensus.Node
                    ( RunNode
                    , RunNodeArgs (..)
                    , StdRunNodeArgs (..)
+                   , NetworkP2PMode (..)
                    )
 import qualified Ouroboros.Consensus.Node as Node (getChainDB, run)
 import           Ouroboros.Consensus.Node.ProtocolInfo
@@ -317,7 +318,7 @@ handleSimpleNodeNonP2P scp runP trace nodeTracers nc onKernel = do
   withShutdownHandling nc trace $ \sfds ->
     void $
       Node.run
-        False
+        DisabledP2PMode
         RunNodeArgs
           { rnTraceConsensus = consensusTracers nodeTracers
           , rnTraceNTN       = nodeToNodeTracers nodeTracers
@@ -473,7 +474,7 @@ handleSimpleNode scp runP trace nodeTracers nc onKernel = do
   withShutdownHandling nc trace $ \sfds ->
     void $
       Node.run
-        True
+        EnabledP2PMode
         RunNodeArgs
           { rnTraceConsensus = consensusTracers nodeTracers
           , rnTraceNTN       = nodeToNodeTracers nodeTracers
