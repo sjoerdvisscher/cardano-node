@@ -253,6 +253,10 @@ handleSimpleNodeNonP2P
 handleSimpleNodeNonP2P scp runP trace nodeTracers nc onKernel = do
   meta <- mkLOMeta Notice Public
 
+  traceNamedObject
+          (appendName "p2p-mode" trace)
+          (meta, LogMessage (Text.pack "Disabled"))
+
   let pInfo = Protocol.protocolInfo runP
       tracer = toLogObject trace
 
@@ -392,6 +396,10 @@ handleSimpleNode
   -> IO ()
 handleSimpleNode scp runP trace nodeTracers nc onKernel = do
   meta <- mkLOMeta Notice Public
+
+  traceNamedObject
+          (appendName "p2p-mode" trace)
+          (meta, LogMessage (Text.pack "Enabled"))
 
   let pInfo = Protocol.protocolInfo runP
       tracer = toLogObject trace
