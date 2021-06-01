@@ -16,6 +16,7 @@ module Data.Distribution
   , computeDistributionStats
   , mapToDistribution
   , zeroDistribution
+  , dPercIx
   , PercSpec(..)
   , renderPercSpec
   , Percentile(..)
@@ -25,8 +26,8 @@ module Data.Distribution
   , spans
   ) where
 
-import           Prelude (String, (!!), head, last)
-import           Cardano.Prelude hiding (head)
+import           Prelude (String, (!!), error, head, last, show)
+import           Cardano.Prelude hiding (head, show)
 
 import           Control.Arrow
 import           Data.Aeson (ToJSON(..))
@@ -47,6 +48,9 @@ data Distribution a b =
 instance (ToJSON a, ToJSON b) => ToJSON (Distribution a b)
 
 newtype PercSpec a = Perc { psFrac :: a } deriving (Generic, Show)
+
+dPercIx :: Distribution a b -> Int -> b
+dPercIx d = pctSample . (dPercentiles d !!)
 
 renderPercSpec :: PrintfArg a => Int -> PercSpec a -> String
 renderPercSpec width = \case
@@ -92,14 +96,17 @@ computeDistributionStats ::
   . ( v ~ Double -- 'v' is fixed by Stat.stdDev
     -- , RealFrac a, Real v, Fractional v, ToRealFrac v a
     , Num a
+    , Show a
     )
-  => [Distribution a v]
+  => String -> [Distribution a v]
   -> Either String (Distribution a v, Distribution a v)
-computeDistributionStats xs = do
+computeDistributionStats desc xs = do
+  when (null xs) $
+    Left $ "Empty list of distributions in " <> desc
   let distPcts    = dPercentiles <$> xs
       pctDistVals = transpose distPcts
   unless (all (pctLen ==) (length <$> distPcts)) $
-    Left ("Distributions with different percentile counts: " <> show (length <$> distPcts))
+    Left ("Distributions with different percentile counts: " <> show (length <$> distPcts) <> " in " <> desc)
   pure $ (join (***) (Distribution (length xs) 0)
           :: ([Percentile a v], [Percentile a v]) -> (Distribution a v, Distribution a v))
        $ unzip (pctsMeanCoV <$> pctDistVals)

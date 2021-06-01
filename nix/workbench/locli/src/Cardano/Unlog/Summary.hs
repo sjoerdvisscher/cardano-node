@@ -24,6 +24,7 @@ import           Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import qualified Data.HashMap.Strict as HashMap
 import qualified Data.Text as Text
+import qualified Data.Text.IO as T
 import           Data.Vector (Vector)
 import qualified Data.Vector as Vec
 
@@ -110,18 +111,25 @@ runBlockPropagation chainInfo logfiles BlockPropagationOutputFiles{..} = do
       (joinT . (pure &&& readLogObjectStream))
 
     forM_ bpofLogObjects . const $ do
-      putStrLn ("runBlockPropagation: dumping LO streams" :: Text)
       flip mapConcurrently objLists $
-        \(JsonLogfile f, objs) ->
+        \(JsonLogfile f, objs) -> do
+            putStrLn ("runBlockPropagation: dumping LO streams" :: Text)
             dumpLOStream objs
               (JsonOutputFile $ F.dropExtension f <> ".logobjects.json")
 
     blockPropagation <- blockProp chainInfo objLists
 
-    putStrLn ("runBlockPropagation: dumping analyses" :: Text)
+    forM_ bpofTimelinePretty $
+      \(TextOutputFile f) ->
+        withFile f WriteMode $ \hnd -> do
+          putStrLn ("runBlockPropagation: dumping pretty timeline" :: Text)
+          hPutStrLn hnd . Text.pack $ printf "--- input: %s" f
+          mapM_ (T.hPutStrLn hnd) (renderDistributions blockPropagation)
+
     forM_ bpofAnalysis $
       \(JsonOutputFile f) ->
-        withFile f WriteMode $ \hnd ->
+        withFile f WriteMode $ \hnd -> do
+          putStrLn ("runBlockPropagation: dumping analysis core" :: Text)
           LBS.hPutStrLn hnd (Aeson.encode blockPropagation)
  where
    joinT :: (IO a, IO b) -> IO (a, b)

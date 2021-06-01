@@ -31,6 +31,7 @@ case "$op" in
         local dir=$(run get "$name")
         local adir=$dir/analysis
 
+        msg "analysing run $name"
         mkdir -p "$adir"
 
         ## 0. subset what we care about into the keyfile
@@ -75,6 +76,7 @@ EOF
             --run-metafile    "$dir"/meta.json
             ## ->
             # --logobjects-json "$adir"/logs-cluster.logobjects.json
+            --timeline-pretty "$adir"/timeline.txt
             --analysis-json   "$adir"/block-event-stream.json
         )
 
@@ -88,6 +90,7 @@ EOF
         local dir=$(run get "$name")
         local adir=$dir/analysis
 
+        msg "analysing run $name"
         mkdir -p "$adir"
 
         ## 0. subset what we care about into the keyfile
